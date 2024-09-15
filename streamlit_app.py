@@ -6,7 +6,7 @@ from io import BytesIO
 import base64
 
 # Data Ingestion:
-main = pd.read_csv(r"D:\Graduation Project\Recommendation System\Dataset\tourist_preferences_recommendations.csv", delimiter=';')
+main = pd.read_csv(r"tourist_preferences_recommendations.csv", delimiter=';')
 
 # Setup Our Application 
 st.title(""" :blue[Travel Vision] Agent 🤖 """)
