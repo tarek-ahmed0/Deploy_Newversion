@@ -6,7 +6,7 @@ from io import BytesIO
 import base64
 
 # Data Ingestion:
-main = pd.read_csv(r"tourist_preferences_recommendations.csv", delimiter=';')
+main = pd.read_csv(r"D:\Graduation Project\Recommendation System\Dataset\tourist_preferences_recommendations.csv", delimiter=';')
 
 # Setup Our Application 
 st.title(""" :blue[Travel Vision] Agent 🤖 """)
@@ -74,9 +74,14 @@ recomm_df = main[(main['Nationality'] == nationality_selected) &
 # Display recommendations in a compact expandable container
 with st.expander(":green[Travel Vision Suggestions 🎯]", expanded=True):
     if not recomm_df.empty:
-        recommended_hotel = recomm_df.sample(n=1)['Hotel Recommendations'].values[0]
-        recommended_rest = recomm_df.sample(n=1)['Restaurant Recommendations'].values[0]
-        recommended_act = recomm_df.sample(n=1)['Activity Recommendations'].values[0]
+        # Select one random row for consistent recommendations
+        selected_row = recomm_df.sample(n=1).iloc[0]
+        
+        recommended_hotel = selected_row['Hotel Recommendations']
+        recommended_rest = selected_row['Restaurant Recommendations']
+        recommended_act = selected_row['Activity Recommendations']
+        
+        # Display the formatted text
         st.write(
             f"Hello! Welcome to Egypt. Firstly, we suggest going to :violet[**{recommended_hotel}**], "
             f"which is suitable for **{travel_type}** journeys. "
@@ -84,32 +89,36 @@ with st.expander(":green[Travel Vision Suggestions 🎯]", expanded=True):
             f"To avoid boredom, what’s your opinion about going for :violet[**{recommended_act}**]? "
             f"I know you like **{activity_type}**."
         )
-        recommende_speech = (
-            f"Hello! Welcome to Egypt. Firstly, we suggest going to :violet[**{recommended_hotel}**], "
-            f"which is suitable for **{travel_type}** journeys. "
-            f"We all know that **{food_type}** food is very delicious, so we suggest having a meal at :violet[**{recommended_rest}**]. "
-            f"To avoid boredom, what’s your opinion about going for :violet[**{recommended_act}**]? "
-            f"I know you like **{activity_type}**."
-        )
 
-        # Text-to-Speech
-        def play_tts(text):
-            tts = gTTS(text, lang='en')
-            audio_data = BytesIO()
-            tts.write_to_fp(audio_data)
-            audio_data.seek(0)
-            return audio_data
+        # Generate Voice Button
+        if st.button('Generate Voice'):
+            recommende_speech = (
+                f"Hello! Welcome to Egypt. Firstly, we suggest going to {recommended_hotel}, "
+                f"which is suitable for {travel_type} journeys. "
+                f"We all know that {food_type} food is very delicious, so we suggest having a meal at {recommended_rest}. "
+                f"To avoid boredom, what’s your opinion about going for {recommended_act}? "
+                f"I know you like {activity_type}."
+            )
 
-        tts_audio = play_tts(recommende_speech)
-        audio_base64 = base64.b64encode(tts_audio.read()).decode()
-        audio_url = f"data:audio/mp3;base64,{audio_base64}"
+            # Text-to-Speech
+            def play_tts(text):
+                tts = gTTS(text, lang='en')
+                audio_data = BytesIO()
+                tts.write_to_fp(audio_data)
+                audio_data.seek(0)
+                return audio_data
 
-        # Embeded
-        st.markdown(f"""
-            <audio controls style="width: 100%; height: 30px; border: none;">
-                <source src="{audio_url}" type="audio/mp3">
-                Your browser does not support the audio element.
-            </audio>
-        """, unsafe_allow_html=True)
+            tts_audio = play_tts(recommende_speech)
+            audio_base64 = base64.b64encode(tts_audio.read()).decode()
+            audio_url = f"data:audio/mp3;base64,{audio_base64}"
+
+            # Embed Audio (No HTML tags for gTTS)
+            st.markdown(f"""
+                <audio controls style="width: 100%; height: 30px; border: none;">
+                    <source src="{audio_url}" type="audio/mp3">
+                    Your browser does not support the audio element.
+                </audio>
+            """, unsafe_allow_html=True)
+
     else:
         st.warning("No recommendations available for the selected criteria.")
